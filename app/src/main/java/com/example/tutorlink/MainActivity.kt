@@ -15,6 +15,7 @@ import com.example.tutorlink.ui.theme.ProfileStudent
 import com.example.tutorlink.ui.theme.RateReview
 import com.example.tutorlink.ui.theme.StudentDash
 import com.example.tutorlink.ui.theme.TutorLINKTheme
+import com.example.tutorlink.ui.theme.TutorLogin
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +34,7 @@ fun TutorLinkApp() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "login") {
         composable("login") { LoginPage(navController) }
+        composable("tutor_login") { TutorLogin() }
         composable("student_dash") { StudentDash(navController) }
         composable("profile_student") { ProfileStudent(navController) }
         composable("appointment_student") { AppointmentStudent(navController) }

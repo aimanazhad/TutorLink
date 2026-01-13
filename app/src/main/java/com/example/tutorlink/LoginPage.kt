@@ -2,7 +2,6 @@ package com.example.tutorlink
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,7 +29,7 @@ fun LoginPage(navController: NavController) {
     var selectedRole by remember { mutableStateOf<String?>(null) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val isLoginEnabled = selectedRole != null && email.isNotBlank() && password.isNotBlank()
+    val isLoginEnabled = selectedRole == "Student" && email.isNotBlank() && password.isNotBlank()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -85,7 +84,10 @@ fun LoginPage(navController: NavController) {
                 RoleSelectionCard(
                     text = "Tutor",
                     selected = selectedRole == "Tutor",
-                    onClick = { selectedRole = "Tutor" },
+                    onClick = {
+                        selectedRole = "Tutor"
+                        navController.navigate("tutor_login")
+                    },
                     modifier = Modifier.weight(1f)
                 )
                 RoleSelectionCard(
@@ -109,7 +111,8 @@ fun LoginPage(navController: NavController) {
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = Color.LightGray
-                )
+                ),
+                enabled = selectedRole == "Student"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -126,7 +129,8 @@ fun LoginPage(navController: NavController) {
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = Color.LightGray
-                )
+                ),
+                enabled = selectedRole == "Student"
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -162,7 +166,7 @@ fun LoginPage(navController: NavController) {
                         navController.navigate("student_dash")
                     }
                 },
-                enabled = selectedRole != null,
+                enabled = selectedRole == "Student",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -183,6 +187,7 @@ fun LoginPage(navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoleSelectionCard(
     text: String,
@@ -199,11 +204,11 @@ fun RoleSelectionCard(
         border = BorderStroke(width = if (selected) 2.dp else 1.dp, color = borderColor),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(12.dp)),
+                .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
