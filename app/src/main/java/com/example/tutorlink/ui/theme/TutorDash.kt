@@ -96,38 +96,33 @@ fun TutorDashBottomBar(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val items = listOf(
-        "tutor_dash",
-        "appointment_tutor",
-        "profile_tutor"
+        Screen("tutor_dash", "Home", Icons.Default.Home),
+        Screen("appointment_tutor", "Appointments", Icons.Rounded.CalendarToday),
+        Screen("rate_review", "Reviews", Icons.Default.Star),
+        Screen("profile_tutor", "Profile", Icons.Default.Person)
     )
-    val icons = listOf(Icons.Default.Home, Icons.Rounded.CalendarToday, Icons.Default.Person)
 
     NavigationBar(
         containerColor = Color(0xFF00C89C), // Teal color
         contentColor = Color.White
     ) {
-        items.forEachIndexed { index, route ->
+        items.forEach { screen ->
             NavigationBarItem(
                 icon = {
                     Icon(
-                        icons[index],
-                        contentDescription = route,
+                        screen.icon,
+                        contentDescription = screen.title,
                         modifier = Modifier.size(28.dp)
                     )
                 },
-                selected = currentRoute == route,
+                label = { Text(screen.title) },
+                selected = currentRoute == screen.route,
                 onClick = { 
-                    navController.navigate(route) {
-                        // Pop up to the start destination of the graph to
-                        // avoid building up a large stack of destinations
-                        // on the back stack as users select items
+                    navController.navigate(screen.route) {
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true
                         }
-                        // Avoid multiple copies of the same destination when
-                        // reselecting the same item
                         launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
                 },
@@ -140,6 +135,8 @@ fun TutorDashBottomBar(navController: NavController) {
         }
     }
 }
+
+data class Screen(val route: String, val title: String, val icon: ImageVector)
 
 @Preview(showBackground = true)
 @Composable

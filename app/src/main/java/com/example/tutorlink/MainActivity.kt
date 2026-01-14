@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.ui.theme.AppointmentStudent
+import com.example.tutorlink.ui.theme.AppointmentTutor
 import com.example.tutorlink.ui.theme.ConfessRate
 import com.example.tutorlink.ui.theme.EditStudent
 import com.example.tutorlink.ui.theme.ProfileStudent
@@ -40,6 +41,7 @@ fun TutorLinkApp() {
         composable("student_dash") { StudentDash(navController) }
         composable("profile_student") { ProfileStudent(navController) }
         composable("appointment_student") { AppointmentStudent(navController) }
+        composable("appointment_tutor") { AppointmentTutor(navController) } 
         composable("confess_rate") { ConfessRate(navController) }
         composable("rate_review") { RateReview(navController) }
         composable("edit_student") { EditStudent(navController) }
