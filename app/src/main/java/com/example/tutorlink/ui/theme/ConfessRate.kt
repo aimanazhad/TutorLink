@@ -51,8 +51,8 @@ fun ConfessRate(navController: NavController) {
     ) { paddingValues ->
         val reviews = remember {
             listOf(
-                Review("Dr. Smith, 435 OOP", "Excellent teaching, very clear and helpful.", "John Doe", "Jun 10, 2024", 5),
-                Review("Prof. Jane, 402 Programming I", "Great course, but a bit fast-paced.", "Jane Smith", "Jun 9, 2024", 4),
+                Review("Dr. Smith", "435 OOP", 5, "Excellent teaching, very clear and helpful.", "John Doe", "Jun 10, 2024"),
+                Review("Prof. Jane", "402 Programming I", 4, "Great course, but a bit fast-paced.", "Jane Smith", "Jun 9, 2024"),
             )
         }
 
@@ -64,7 +64,7 @@ fun ConfessRate(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(reviews) { review ->
-                ReviewCard(review)
+                ConfessionReviewCard(review)
             }
         }
     }
@@ -100,16 +100,8 @@ fun ConfessRateTopBar() {
     )
 }
 
-data class Review(
-    val title: String,
-    val text: String,
-    val reviewerName: String,
-    val date: String,
-    val rating: Int
-)
-
 @Composable
-fun ReviewCard(review: Review) {
+fun ConfessionReviewCard(review: Review) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -119,8 +111,8 @@ fun ReviewCard(review: Review) {
         Column(modifier = Modifier.padding(16.dp)) {
             StarRating(rating = review.rating)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(review.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text(review.text, fontSize = 14.sp, color = Color.Gray)
+            Text("${review.tutorName}, ${review.courseCode}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(review.comment, fontSize = 14.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(16.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
