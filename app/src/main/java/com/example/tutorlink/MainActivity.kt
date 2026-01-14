@@ -14,6 +14,7 @@ import com.example.tutorlink.ui.theme.ConfessRate
 import com.example.tutorlink.ui.theme.EditStudent
 import com.example.tutorlink.ui.theme.ProfileStudent
 import com.example.tutorlink.ui.theme.RateReview
+import com.example.tutorlink.ui.theme.SplashScreen
 import com.example.tutorlink.ui.theme.StudentDash
 import com.example.tutorlink.ui.theme.TutorDash
 import com.example.tutorlink.ui.theme.TutorLINKTheme
@@ -34,14 +35,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TutorLinkApp() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "login") {
-        composable("login") { LoginPage(navController) }
+    NavHost(navController = navController, startDestination = "splash") {
+        composable("splash") { SplashScreen(navController) }
+        composable("login") { LoginPage(navController) } // Assuming LoginPage exists
         composable("tutor_login") { TutorLogin(navController) }
         composable("tutor_dash") { TutorDash(navController) }
         composable("student_dash") { StudentDash(navController) }
         composable("profile_student") { ProfileStudent(navController) }
         composable("appointment_student") { AppointmentStudent(navController) }
-        composable("appointment_tutor") { AppointmentTutor(navController) } 
+        composable("appointment_tutor") { AppointmentTutor(navController) }
         composable("confess_rate") { ConfessRate(navController) }
         composable("rate_review") { RateReview(navController) }
         composable("edit_student") { EditStudent(navController) }
