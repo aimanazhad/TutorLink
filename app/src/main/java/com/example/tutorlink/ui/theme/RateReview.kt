@@ -148,7 +148,7 @@ fun RateReviewForm(onSubmit: () -> Unit, onError: () -> Unit) {
 @Composable
 fun StarRatingSelector(rating: Int, onRatingChange: (Int) -> Unit) {
     Row {
-        for (i in 1..5) {
+        (1..5).forEach { i ->
             Icon(
                 imageVector = if (i <= rating) Icons.Filled.Star else Icons.Filled.StarBorder,
                 contentDescription = if (i <= rating) "Full Star" else "Empty Star",

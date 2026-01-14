@@ -20,10 +20,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
 
 @Composable
-fun TutorLogin() {
+fun TutorLogin(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -112,7 +114,7 @@ fun TutorLogin() {
 
             // Log In Button
             Button(
-                onClick = { /* Handle tutor login logic */ },
+                onClick = { navController.navigate("tutor_dash") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -168,6 +170,6 @@ fun TutorLogin() {
 @Composable
 fun TutorLoginPreview() {
     TutorLINKTheme {
-        TutorLogin()
+        TutorLogin(rememberNavController())
     }
 }

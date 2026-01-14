@@ -14,6 +14,7 @@ import com.example.tutorlink.ui.theme.EditStudent
 import com.example.tutorlink.ui.theme.ProfileStudent
 import com.example.tutorlink.ui.theme.RateReview
 import com.example.tutorlink.ui.theme.StudentDash
+import com.example.tutorlink.ui.theme.TutorDash
 import com.example.tutorlink.ui.theme.TutorLINKTheme
 import com.example.tutorlink.ui.theme.TutorLogin
 
@@ -34,7 +35,8 @@ fun TutorLinkApp() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "login") {
         composable("login") { LoginPage(navController) }
-        composable("tutor_login") { TutorLogin() }
+        composable("tutor_login") { TutorLogin(navController) }
+        composable("tutor_dash") { TutorDash(navController) }
         composable("student_dash") { StudentDash(navController) }
         composable("profile_student") { ProfileStudent(navController) }
         composable("appointment_student") { AppointmentStudent(navController) }
