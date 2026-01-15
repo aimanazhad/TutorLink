@@ -5,12 +5,13 @@ import android.app.TimePickerDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,10 +41,10 @@ fun AppointmentStudent(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
             AppointmentForm(
                 onSuccess = {
                     scope.launch {
@@ -60,6 +61,8 @@ fun AppointmentStudent(navController: NavController) {
                     }
                 }
             )
+            Spacer(modifier = Modifier.height(24.dp))
+            DonationSection()
         }
     }
 }
@@ -86,11 +89,10 @@ fun AppointmentStudentTopBar() {
             )
         },
         actions = {
-            // Invisible spacer to push the title to a more centered position
-            Spacer(modifier = Modifier.width(56.dp)) // 40dp icon + 16dp padding
+            Spacer(modifier = Modifier.width(56.dp))
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFFFDECEE)
+            containerColor = MaterialTheme.colorScheme.primaryContainer
         )
     )
 }
@@ -176,7 +178,7 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
                 Card(
                     modifier = Modifier.clickable { datePickerDialog.show() },
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
                 ) {
                     Box(
                         modifier = Modifier
@@ -184,7 +186,7 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(selectedDate ?: "Select Date", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text(selectedDate ?: "Select Date", color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -193,7 +195,7 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
                 Card(
                     modifier = Modifier.clickable { timePickerDialog.show() },
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
                 ) {
                     Box(
                         modifier = Modifier
@@ -201,7 +203,7 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(selectedTime ?: "Select Time", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text(selectedTime ?: "Select Time", color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -224,9 +226,48 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
                 .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
         ) {
             Text(text = "Submit", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun DonationSection() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Feeling generous?",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "You can show your appreciation to the tutor by making a donation. This is completely optional.",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        Card(
+            modifier = Modifier.padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.qr),
+                    contentDescription = "Maybank QR Code",
+                    modifier = Modifier.size(200.dp)
+                )
+                Text("Putri Nursyazwani Binti M", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text("Show this QR code to donate", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }
