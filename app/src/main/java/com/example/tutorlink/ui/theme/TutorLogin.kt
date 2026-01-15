@@ -143,7 +143,7 @@ fun TutorLogin(navController: NavController) {
 
             // Sign in with Google Button
             OutlinedButton(
-                onClick = { /* Handle Google Sign-In */ },
+                onClick = { navController.navigate("tutor_dash") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
