@@ -29,7 +29,7 @@ fun LoginPage(navController: NavController) {
     var selectedRole by remember { mutableStateOf<String?>(null) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val isLoginEnabled = selectedRole == "Student" && email.isNotBlank() && password.isNotBlank()
+    val isStudentRoleSelected = selectedRole == "Student"
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -48,7 +48,7 @@ fun LoginPage(navController: NavController) {
                 contentDescription = "App Logo",
                 modifier = Modifier
                     .size(180.dp)
-                    .clip(RoundedCornerShape(24.dp)) // Added rounding here
+                    .clip(RoundedCornerShape(24.dp))
                     .padding(bottom = 24.dp)
             )
 
@@ -92,7 +92,7 @@ fun LoginPage(navController: NavController) {
                 )
                 RoleSelectionCard(
                     text = "Student",
-                    selected = selectedRole == "Student",
+                    selected = isStudentRoleSelected,
                     onClick = { selectedRole = "Student" },
                     modifier = Modifier.weight(1f)
                 )
@@ -112,7 +112,7 @@ fun LoginPage(navController: NavController) {
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = Color.LightGray
                 ),
-                enabled = selectedRole == "Student"
+                enabled = isStudentRoleSelected
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -130,19 +130,15 @@ fun LoginPage(navController: NavController) {
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = Color.LightGray
                 ),
-                enabled = selectedRole == "Student"
+                enabled = isStudentRoleSelected
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Log In button
             Button(
-                onClick = {
-                    if (selectedRole == "Student") {
-                        navController.navigate("student_dash")
-                    }
-                },
-                enabled = isLoginEnabled,
+                onClick = { navController.navigate("student_dash") },
+                enabled = isStudentRoleSelected,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -161,12 +157,8 @@ fun LoginPage(navController: NavController) {
 
             // Sign in with Google
             OutlinedButton(
-                onClick = {
-                    if (selectedRole == "Student") {
-                        navController.navigate("student_dash")
-                    }
-                },
-                enabled = selectedRole == "Student",
+                onClick = { navController.navigate("student_dash") },
+                enabled = isStudentRoleSelected,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

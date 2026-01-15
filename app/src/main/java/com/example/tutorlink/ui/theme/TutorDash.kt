@@ -1,4 +1,3 @@
-
 package com.example.tutorlink.ui.theme
 
 import androidx.compose.foundation.Image
@@ -41,44 +40,32 @@ fun TutorDash(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .background(Color(0xFFF0F4F8)) // Consistent background
         ) {
             Text(
                 text = "ANNOUNCEMENT",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(bottom = 16.dp)
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
             AnnouncementList()
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TutorDashTopBar() {
     var searchQuery by remember { mutableStateOf("") }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFFFDECEE)) // A light pinkish color similar to the image
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.tutorlink__1_),
-                contentDescription = "Logo",
-                modifier = Modifier.size(40.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
+    TopAppBar(
+        title = {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search") },
+                placeholder = { Text("Search...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -87,8 +74,16 @@ fun TutorDashTopBar() {
                     focusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
-        }
-    }
+        },
+        navigationIcon = {
+             Image(
+                painter = painterResource(id = R.drawable.tutorlink__1_),
+                contentDescription = "Logo",
+                modifier = Modifier.padding(start = 16.dp).size(40.dp)
+            )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFDECEE))
+    )
 }
 
 @Composable
@@ -103,8 +98,9 @@ fun TutorDashBottomBar(navController: NavController) {
     )
 
     NavigationBar(
-        containerColor = Color(0xFF00C89C), // Teal color
-        contentColor = Color.White
+        containerColor = Color.White,
+        contentColor = MaterialTheme.colorScheme.primary,
+        tonalElevation = 8.dp
     ) {
         items.forEach { screen ->
             NavigationBarItem(
@@ -112,10 +108,10 @@ fun TutorDashBottomBar(navController: NavController) {
                     Icon(
                         screen.icon,
                         contentDescription = screen.title,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(26.dp)
                     )
                 },
-                label = { Text(screen.title) },
+                label = { Text(screen.title, fontSize = 12.sp) },
                 selected = currentRoute == screen.route,
                 onClick = { 
                     navController.navigate(screen.route) {
@@ -127,9 +123,11 @@ fun TutorDashBottomBar(navController: NavController) {
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
-                    unselectedIconColor = Color.White,
-                    indicatorColor = Color(0xFFE0B0FF) // Light purple for selected background
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = Color.Gray,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedTextColor = Color.Gray,
+                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 )
             )
         }

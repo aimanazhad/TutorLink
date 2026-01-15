@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,25 +28,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
-import kotlinx.coroutines.launch
 
 @Composable
 fun ConfessRate(navController: NavController) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
     Scaffold(
         topBar = { ConfessRateTopBar() },
         bottomBar = { StudentDashBottomBar(navController) },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("rate_review") },
+                onClick = { navController.navigate("add_review") },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Review", tint = Color.White)
+                Icon(Icons.Default.Add, contentDescription = "Add Review", tint = MaterialTheme.colorScheme.onPrimary)
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         val reviews = remember {
             listOf(
@@ -59,6 +53,7 @@ fun ConfessRate(navController: NavController) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -95,7 +90,7 @@ fun ConfessRateTopBar() {
             Spacer(modifier = Modifier.width(56.dp)) // To center the title
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFFFDECEE)
+            containerColor = MaterialTheme.colorScheme.primaryContainer
         )
     )
 }
@@ -105,29 +100,29 @@ fun ConfessionReviewCard(review: Review) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             StarRating(rating = review.rating)
             Spacer(modifier = Modifier.height(8.dp))
             Text("${review.tutorName}, ${review.courseCode}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text(review.comment, fontSize = 14.sp, color = Color.Gray)
+            Text(review.comment, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(16.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(Color.LightGray.copy(alpha = 0.5f)),
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = "Reviewer Icon", tint = Color.Gray)
+                    Icon(Icons.Default.Person, contentDescription = "Reviewer Icon", tint = MaterialTheme.colorScheme.onSecondaryContainer)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(review.reviewerName, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                    Text(review.date, fontSize = 12.sp, color = Color.Gray)
+                    Text(review.date, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -141,7 +136,7 @@ fun StarRating(rating: Int) {
             Icon(
                 imageVector = if (i <= rating) Icons.Filled.Star else Icons.Filled.StarBorder,
                 contentDescription = if (i <= rating) "Full Star" else "Empty Star",
-                tint = if (i <= rating) Color(0xFFFFD700) else Color.Gray,
+                tint = if (i <= rating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(24.dp)
             )
         }

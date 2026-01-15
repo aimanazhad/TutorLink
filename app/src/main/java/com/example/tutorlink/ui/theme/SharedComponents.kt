@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,15 +52,21 @@ data class Announcement(
 
 @Composable
 fun AnnouncementList() {
-    val announcements = remember {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val announcements = remember(primaryColor, secondaryColor, tertiaryColor) {
         listOf(
-            Announcement("435 OOP", "Object Oriented Programming", "Room 302", "8:00 AM", Icons.Default.Star, Color(0xFF6A1B9A)),
-            Announcement("402 Programming I", "Introduction to Programming", "Room 101", "10:00 AM", Icons.Default.Star, Color(0xFF6A1B9A)),
-            Announcement("429 Computer Architecture", "Computer Systems", "Room 205", "1:00 PM", Icons.Default.Star, Color(0xFF6A1B9A))
+            Announcement("435 OOP", "Object Oriented Programming", "Room 302", "8:00 AM", Icons.Default.Star, primaryColor),
+            Announcement("402 Programming I", "Introduction to Programming", "Room 101", "10:00 AM", Icons.Default.Star, secondaryColor),
+            Announcement("429 Computer Architecture", "Computer Systems", "Room 205", "1:00 PM", Icons.Default.Star, tertiaryColor)
         )
     }
 
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(16.dp)
+    ) {
         items(announcements) { announcement ->
             AnnouncementCard(announcement)
         }
@@ -71,7 +79,7 @@ fun AnnouncementCard(announcement: Announcement) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -79,7 +87,7 @@ fun AnnouncementCard(announcement: Announcement) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(announcement.iconColor.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
@@ -88,15 +96,15 @@ fun AnnouncementCard(announcement: Announcement) {
                     imageVector = announcement.icon,
                     contentDescription = "Course Icon",
                     tint = announcement.iconColor,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = announcement.courseCode, fontWeight = FontWeight.Bold)
-                Text(text = "${announcement.courseName} - ${announcement.details}", fontSize = 14.sp, color = Color.Gray)
+                Text(text = announcement.courseCode, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(text = "${announcement.courseName} - ${announcement.details}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(text = announcement.time, fontSize = 12.sp, color = Color.Gray)
+            Text(text = announcement.time, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -130,7 +138,8 @@ fun CustomDropdown(
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
-            enabled = enabled
+            enabled = enabled,
+            shape = RoundedCornerShape(12.dp)
         )
         ExposedDropdownMenu(
             expanded = expanded,

@@ -2,17 +2,7 @@ package com.example.tutorlink.ui.theme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -50,7 +40,7 @@ data class Review(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RateReview(navController: NavController) {
-    // Sample list of reviews. In a real app, you would fetch this from a ViewModel.
+    // Sample list of reviews
     val reviews = remember {
         listOf(
             Review(
@@ -85,22 +75,12 @@ fun RateReview(navController: NavController) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "REVIEW",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
+                        text = "Reviews Received",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp
-                    )
-                },
-                navigationIcon = {
-                    Image(
-                        painter = painterResource(id = R.drawable.tutorlink__1_),
-                        contentDescription = "Logo",
-                        modifier = Modifier.padding(start = 16.dp).size(36.dp)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFFDECEE) // Light pinkish color from image
+                    containerColor = Color(0xFFFDECEE)
                 )
             )
         },
@@ -112,8 +92,8 @@ fun RateReview(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF9F9F9)) // Light gray background
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .background(Color(0xFFF0F4F8)) // Consistent background color
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(reviews) { review ->
@@ -135,25 +115,27 @@ fun ReviewCard(review: Review) {
             modifier = Modifier.padding(16.dp)
         ) {
             StarRatingDisplay(rating = review.rating)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "${review.tutorName}, ${review.courseCode}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = review.comment,
                 fontSize = 16.sp,
                 color = Color.DarkGray
             )
             Spacer(modifier = Modifier.height(16.dp))
+            Divider()
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
                         .background(Color(0xFFEEEEEE)),
                     contentAlignment = Alignment.Center
@@ -162,10 +144,10 @@ fun ReviewCard(review: Review) {
                         imageVector = Icons.Default.Person,
                         contentDescription = "Reviewer",
                         tint = Color.Gray,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
                         text = review.reviewerName,
@@ -190,8 +172,8 @@ fun StarRatingDisplay(rating: Int) {
             Icon(
                 imageVector = Icons.Filled.Star,
                 contentDescription = "Star",
-                tint = if (index < rating) Color(0xFFFFD700) else Color(0xFFE0E0E0),
-                modifier = Modifier.size(24.dp)
+                tint = if (index < rating) Color(0xFFFFC107) else Color(0xFFE0E0E0), // Brighter yellow
+                modifier = Modifier.size(28.dp)
             )
         }
     }

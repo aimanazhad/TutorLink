@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
@@ -16,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,9 +37,7 @@ fun EditTutor(navController: NavController) {
             TopAppBar(
                 title = {
                     Text(
-                        "EDIT PROFILE",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
+                        "Edit Profile",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -47,10 +45,6 @@ fun EditTutor(navController: NavController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                },
-                actions = {
-                    // Spacer for centering title
-                    Spacer(modifier = Modifier.width(48.dp))
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFFFDECEE)
@@ -62,8 +56,8 @@ fun EditTutor(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(24.dp)
-                .background(MaterialTheme.colorScheme.background),
+                .background(Color(0xFFF0F4F8))
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Picture with Edit Icon
@@ -85,17 +79,16 @@ fun EditTutor(navController: NavController) {
                 // Small edit badge
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary)
-                        .padding(4.dp),
+                        .padding(8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = android.R.drawable.ic_menu_camera),
+                        imageVector = Icons.Default.Edit,
                         contentDescription = "Change Photo",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        tint = Color.White
                     )
                 }
             }
@@ -138,9 +131,8 @@ fun EditTutor(navController: NavController) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text("SAVE CHANGES", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
@@ -151,8 +143,8 @@ fun EditTutor(navController: NavController) {
                 onClick = { navController.popBackStack() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, Color.Gray)
             ) {
                 Text("CANCEL", color = Color.Gray, fontWeight = FontWeight.Bold)

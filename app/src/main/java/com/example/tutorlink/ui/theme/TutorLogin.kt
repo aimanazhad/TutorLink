@@ -36,50 +36,38 @@ fun TutorLogin(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             // Logo
             Image(
-                painter = painterResource(id = R.drawable.tutorlink__1_), // make sure you have this drawable resource
+                painter = painterResource(id = R.drawable.tutorlink__1_),
                 contentDescription = "Logo",
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier.size(150.dp).padding(bottom = 24.dp)
             )
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // Welcome Text
             Text(
-                text = "Welcome Back!",
+                text = "Welcome Tutor!",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF6200EE) // A shade of purple
+                color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = "Sign in to continue",
+                text = "Sign in to manage your classes",
                 fontSize = 16.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // "I am a Tutor" Text
-            Text(
-                text = "I am a Tutor",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Email Field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text("Email Address") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Email,
@@ -87,8 +75,12 @@ fun TutorLogin(navController: NavController) {
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -105,9 +97,13 @@ fun TutorLogin(navController: NavController) {
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -118,9 +114,10 @@ fun TutorLogin(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
-                Text(text = "Log In", fontSize = 18.sp)
+                Text(text = "Log In", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -133,8 +130,8 @@ fun TutorLogin(navController: NavController) {
                 HorizontalDivider(modifier = Modifier.weight(1f))
                 Text(
                     text = "OR",
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    color = Color.Gray
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 HorizontalDivider(modifier = Modifier.weight(1f))
             }
@@ -147,18 +144,21 @@ fun TutorLogin(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_google_logo), // make sure you have this drawable
+                        painter = painterResource(id = R.drawable.ic_google_logo),
                         contentDescription = "Google logo",
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
                         text = "Sign in with Google",
-                        modifier = Modifier.padding(start = 8.dp),
-                        textAlign = TextAlign.Center
+                        modifier = Modifier.padding(start = 12.dp),
+                        fontSize = 16.sp
                     )
                 }
             }

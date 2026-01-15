@@ -2,16 +2,9 @@ package com.example.tutorlink.ui.theme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,60 +31,46 @@ fun SplashScreen(navController: NavController) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF0F4F8) // Use consistent light background
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            // Top decorative bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize().padding(bottom = 50.dp) // Add padding to push content up a bit
             ) {
-                Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFFC88080)))
-                Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color.White))
-                Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFFC88080)))
-                Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color.White))
-                Box(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFFC88080)))
-            }
-            
-            Spacer(modifier = Modifier.weight(1f))
+                // Logo
+                Image(
+                    painter = painterResource(id = R.drawable.tutorlink__1_),
+                    contentDescription = "TutorLink Logo",
+                    modifier = Modifier.size(180.dp)
+                )
 
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.tutorlink__1_),
-                contentDescription = "TutorLink Logo",
-                modifier = Modifier.height(150.dp)
-            )
-            
-            // App Name
-            Text(
-                text = "TUTORLINK",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF00C89C)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Slogan
-            Text(
-                text = "CONNECTING STUDENTS &\nTUTORS IN ONE PLACE",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
-            )
-            
-            Spacer(modifier = Modifier.weight(1f))
+                // App Name
+                Text(
+                    text = "TUTORLINK",
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary // Use primary color
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Slogan
+                Text(
+                    text = "CONNECTING STUDENTS & TUTORS IN ONE PLACE",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
+            }
         }
     }
 }

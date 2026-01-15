@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,25 +25,28 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileTutor(navController: NavController) {
     Scaffold(
-        topBar = { ProfileTutorTopBar() },
+        topBar = { 
+            TopAppBar(
+                title = { Text("My Profile", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFFDECEE)
+                )
+            )
+        },
         bottomBar = { TutorDashBottomBar(navController) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(Color(0xFFF0F4F8))
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "PROFILE",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
-
             Spacer(modifier = Modifier.height(16.dp))
 
             // Profile Icon
@@ -56,9 +61,14 @@ fun ProfileTutor(navController: NavController) {
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile Icon",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(72.dp)
+                    modifier = Modifier.size(80.dp)
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(text = "Dr. Smith", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Tutor", fontSize = 16.sp, color = Color.Gray)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -69,18 +79,18 @@ fun ProfileTutor(navController: NavController) {
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    ProfileDetailRow(label = "Name:", value = "Dr. Smith")
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ProfileDetailRow(label = "Full Name:", value = "Dr. Smith")
+                    Divider()
                     ProfileDetailRow(label = "Staff ID:", value = "T12345")
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    Divider()
                     ProfileDetailRow(label = "Phone No:", value = "012-3456789")
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    ProfileDetailRow(label = "Status:", value = "Tutor")
+                    Divider()
+                    ProfileDetailRow(label = "Email:", value = "dr.smith@university.edu")
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             // Edit Profile Button
             Button(
@@ -88,10 +98,11 @@ fun ProfileTutor(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text(text = "Edit Profile", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Icon(Icons.Default.Edit, contentDescription = "Edit Profile", modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Edit Profile", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -100,10 +111,7 @@ fun ProfileTutor(navController: NavController) {
             OutlinedButton(
                 onClick = {
                     navController.navigate("login") {
-                        popUpTo(navController.graph.startDestinationId) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
+                        popUpTo(0) { inclusive = true }
                     }
                 },
                 modifier = Modifier
@@ -112,26 +120,12 @@ fun ProfileTutor(navController: NavController) {
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
             ) {
-                Text(text = "Log Out", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Log Out", tint = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Log Out", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
             }
+             Spacer(modifier = Modifier.height(8.dp))
         }
-    }
-}
-
-@Composable
-fun ProfileTutorTopBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFFFDECEE))
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.tutorlink__1_),
-            contentDescription = "Logo",
-            modifier = Modifier.size(40.dp)
-        )
     }
 }
 

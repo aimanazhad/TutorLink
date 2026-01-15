@@ -1,6 +1,7 @@
 package com.example.tutorlink.ui.theme
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,6 +39,7 @@ data class AppointmentRequest(
     val dateTime: String
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppointmentTutor(navController: NavController) {
     val context = LocalContext.current
@@ -71,107 +73,92 @@ fun AppointmentTutor(navController: NavController) {
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
-        bottomBar = { TutorDashBottomBar(navController) }
+        bottomBar = { TutorDashBottomBar(navController) },
+        topBar = { 
+            TopAppBar(
+                title = { Text("Appointments", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            )
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            // Top Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .background(Color(0xFF80DEEA)), // Using a consistent color from the app
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Appointment (Tutor)",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.tutorlink__1_),
-                contentDescription = "TutorLink Logo",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .height(80.dp)
-            )
-
             // "Announcement" Title
             Text(
-                text = "Announcement",
-                fontSize = 24.sp,
+                text = "Pending Requests",
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(vertical = 16.dp)
+                    .padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
 
             // List of appointment requests
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(horizontal = 16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 itemsIndexed(appointmentRequests) { index, request ->
                     AppointmentRequestCard(
                         request = request,
                         highlighted = selectedIndex == index,
-                        onClick = { selectedIndex = index }
+                        onClick = { selectedIndex = if (selectedIndex == index) null else index } // Toggle selection
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
             // Details and Action Buttons for selected request
             val selectedRequest = selectedIndex?.let { appointmentRequests[it] }
             if (selectedRequest != null) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(text = "Student: ${selectedRequest.studentName}", fontWeight = FontWeight.Bold)
-                    Text(text = "Course code: ${selectedRequest.courseCode}")
-                    Text(text = "How many student: ${selectedRequest.studentCount}")
-                    Text(text = "Date, Time: ${selectedRequest.dateTime}")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(onClick = { 
-                        Toast.makeText(context, "Appointment for ${selectedRequest.studentName} Approved", Toast.LENGTH_SHORT).show()
-                        selectedIndex = null // Deselect after action
-                    }) {
-                        Text("APPROVE")
-                    }
-                    Button(
-                        onClick = { 
-                            Toast.makeText(context, "Appointment for ${selectedRequest.studentName} Rejected", Toast.LENGTH_SHORT).show()
-                            selectedIndex = null // Deselect after action
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // A clearer Red
+                Column(modifier = Modifier.padding(top = 16.dp)) {
+                    Divider()
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("REJECT")
+                        Text("REQUEST DETAILS", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
+                        Text(text = "Student: ${selectedRequest.studentName}", fontWeight = FontWeight.Medium)
+                        Text(text = "Course code: ${selectedRequest.courseCode}")
+                        Text(text = "No. of Students: ${selectedRequest.studentCount}")
+                        Text(text = "Date & Time: ${selectedRequest.dateTime}")
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Button(
+                            onClick = { 
+                                Toast.makeText(context, "Appointment for ${selectedRequest.studentName} Approved", Toast.LENGTH_SHORT).show()
+                                selectedIndex = null // Deselect after action
+                            },
+                            modifier = Modifier.weight(1f).height(50.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("APPROVE", fontWeight = FontWeight.Bold)
+                        }
+                        OutlinedButton(
+                            onClick = { 
+                                Toast.makeText(context, "Appointment for ${selectedRequest.studentName} Rejected", Toast.LENGTH_SHORT).show()
+                                selectedIndex = null // Deselect after action
+                            },
+                            modifier = Modifier.weight(1f).height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("REJECT", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -179,15 +166,17 @@ fun AppointmentTutor(navController: NavController) {
 
 @Composable
 fun AppointmentRequestCard(request: AppointmentRequest, highlighted: Boolean, onClick: () -> Unit) {
+    val backgroundColor = if (highlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
+    val borderColor = if (highlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (highlighted) Color(0xFFF0F0F0) else Color.White // Light grey for highlight
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, borderColor)
     ) {
         Row(
             modifier = Modifier
@@ -200,20 +189,20 @@ fun AppointmentRequestCard(request: AppointmentRequest, highlighted: Boolean, on
                 // Icon for the class
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFE0E0E0)),
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Class, contentDescription = "Class Icon", tint = Color.Gray)
+                    Icon(Icons.Default.Class, contentDescription = "Class Icon", tint = MaterialTheme.colorScheme.primary)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text(text = request.className, fontWeight = FontWeight.Bold)
-                    Text(text = request.classDescription, fontSize = 14.sp, color = Color.Gray)
+                    Text(text = request.className, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text(text = request.classDescription, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Text(text = request.time, fontSize = 12.sp, color = Color.Gray)
+            Text(text = request.time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
