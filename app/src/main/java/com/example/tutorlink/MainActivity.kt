@@ -12,7 +12,9 @@ import com.example.tutorlink.ui.theme.AppointmentStudent
 import com.example.tutorlink.ui.theme.AppointmentTutor
 import com.example.tutorlink.ui.theme.ConfessRate
 import com.example.tutorlink.ui.theme.EditStudent
+import com.example.tutorlink.ui.theme.EditTutor
 import com.example.tutorlink.ui.theme.ProfileStudent
+import com.example.tutorlink.ui.theme.ProfileTutor
 import com.example.tutorlink.ui.theme.RateReview
 import com.example.tutorlink.ui.theme.SplashScreen
 import com.example.tutorlink.ui.theme.StudentDash
@@ -42,10 +44,12 @@ fun TutorLinkApp() {
         composable("tutor_dash") { TutorDash(navController) }
         composable("student_dash") { StudentDash(navController) }
         composable("profile_student") { ProfileStudent(navController) }
+        composable("edit_student") { EditStudent(navController) }
+        composable("profile_tutor") { ProfileTutor(navController) }
+        composable("edit_tutor") { EditTutor(navController) }
         composable("appointment_student") { AppointmentStudent(navController) }
         composable("appointment_tutor") { AppointmentTutor(navController) }
         composable("confess_rate") { ConfessRate(navController) }
         composable("rate_review") { RateReview(navController) }
-        composable("edit_student") { EditStudent(navController) }
     }
 }
