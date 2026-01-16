@@ -31,6 +31,7 @@ import java.util.Locale
 fun AppointmentStudent(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var selectedTutor by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = { AppointmentStudentTopBar() },
@@ -46,6 +47,8 @@ fun AppointmentStudent(navController: NavController) {
             horizontalAlignment = Alignment.Start
         ) {
             AppointmentForm(
+                selectedTutor = selectedTutor,
+                onTutorSelected = { selectedTutor = it },
                 onSuccess = {
                     scope.launch {
                         snackbarHostState.showSnackbar("Appointment Success")
@@ -61,8 +64,6 @@ fun AppointmentStudent(navController: NavController) {
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(24.dp))
-            DonationSection()
         }
     }
 }
@@ -98,7 +99,12 @@ fun AppointmentStudentTopBar() {
 }
 
 @Composable
-fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
+fun AppointmentForm(
+    selectedTutor: String?,
+    onTutorSelected: (String) -> Unit,
+    onSuccess: () -> Unit,
+    onError: () -> Unit
+) {
     val tutorCourseMap = remember {
         mapOf(
             "Mr Ahmad" to listOf("435 OOP", "402 Programming I"),
@@ -109,13 +115,14 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
     val tutorOptions = remember { tutorCourseMap.keys.toList() }
     val studentCountOptions = listOf("1", "2", "3", "4", "5+")
 
-    var tutor by remember { mutableStateOf<String?>(null) }
     var course by remember { mutableStateOf<String?>(null) }
     var studentCount by remember { mutableStateOf<String?>(null) }
     var selectedDate by remember { mutableStateOf<String?>(null) }
     var selectedTime by remember { mutableStateOf<String?>(null) }
 
-    var availableCourses by remember { mutableStateOf<List<String>>(emptyList()) }
+    var availableCourses by remember { 
+        mutableStateOf(selectedTutor?.let { tutorCourseMap[it] } ?: emptyList<String>()) 
+    }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
@@ -152,11 +159,11 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
         CustomDropdown(
             label = "Select Tutor",
             options = tutorOptions,
-            selectedOption = tutor,
-            onOptionSelected = { selectedTutor ->
-                tutor = selectedTutor
+            selectedOption = selectedTutor,
+            onOptionSelected = { tutor ->
+                onTutorSelected(tutor)
                 course = null // Reset course selection
-                availableCourses = tutorCourseMap[selectedTutor] ?: emptyList()
+                availableCourses = tutorCourseMap[tutor] ?: emptyList()
             }
         )
 
@@ -166,7 +173,7 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
             options = availableCourses,
             selectedOption = course,
             onOptionSelected = { course = it },
-            enabled = tutor != null
+            enabled = selectedTutor != null
         )
 
         Row(
@@ -212,11 +219,16 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
         Text("How Many Students", fontWeight = FontWeight.SemiBold)
         CustomDropdown(label = "Select Student Count", options = studentCountOptions, selectedOption = studentCount, onOptionSelected = { studentCount = it })
 
-        Spacer(modifier = Modifier.height(16.dp))
+        if (selectedTutor != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            DonationSection(tutorName = selectedTutor)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
-                if (tutor != null && course != null && studentCount != null && selectedDate != null && selectedTime != null) {
+                if (selectedTutor != null && course != null && studentCount != null && selectedDate != null && selectedTime != null) {
                     onSuccess()
                 } else {
                     onError()
@@ -233,7 +245,7 @@ fun AppointmentForm(onSuccess: () -> Unit, onError: () -> Unit) {
 }
 
 @Composable
-fun DonationSection() {
+fun DonationSection(tutorName: String) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -245,7 +257,7 @@ fun DonationSection() {
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "You can show your appreciation to the tutor by making a donation. This is completely optional.",
+            text = "You can show your appreciation to $tutorName by making a donation. This is completely optional.",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -261,11 +273,11 @@ fun DonationSection() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.qr),
-                    contentDescription = "Maybank QR Code",
+                    painter = painterResource(id = R.drawable.qraiman),
+                    contentDescription = "Tutor QR Code",
                     modifier = Modifier.size(200.dp)
                 )
-                Text("Putri Nursyazwani Binti M", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(tutorName, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text("Show this QR code to donate", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
