@@ -40,7 +40,8 @@ fun TutorLinkApp() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") { SplashScreen(navController) }
-        composable("login") { LoginPage(navController) } // Assuming LoginPage exists
+        composable("login") { LoginPage(navController) } 
+        composable("signup") { SignUpPage(navController) } 
         composable("tutor_login") { TutorLogin(navController) }
         composable("tutor_dash") { TutorDash(navController) }
         composable("student_dash") { StudentDash(navController) }

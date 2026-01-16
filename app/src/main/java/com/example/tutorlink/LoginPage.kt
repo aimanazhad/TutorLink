@@ -33,7 +33,7 @@ fun LoginPage(navController: NavController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF0F4F8) // Light blue-gray background
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -42,7 +42,6 @@ fun LoginPage(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo
             Image(
                 painter = painterResource(id = R.drawable.tutorlink__1_),
                 contentDescription = "App Logo",
@@ -52,7 +51,6 @@ fun LoginPage(navController: NavController) {
                     .padding(bottom = 24.dp)
             )
 
-            // Welcome Back
             Text(
                 text = "Welcome Back!",
                 fontSize = 28.sp,
@@ -65,17 +63,15 @@ fun LoginPage(navController: NavController) {
             Text(
                 text = "Sign in to continue",
                 fontSize = 16.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // I am a...
             Text(text = "I am a...", fontWeight = FontWeight.SemiBold)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Role selection
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -100,7 +96,6 @@ fun LoginPage(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -110,14 +105,13 @@ fun LoginPage(navController: NavController) {
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 ),
                 enabled = isStudentRoleSelected
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -128,14 +122,13 @@ fun LoginPage(navController: NavController) {
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 ),
                 enabled = isStudentRoleSelected
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Log In button
             Button(
                 onClick = { navController.navigate("student_dash") },
                 enabled = isStudentRoleSelected,
@@ -150,12 +143,10 @@ fun LoginPage(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // OR
-            Text(text = "OR", color = Color.Gray)
+            Text(text = "OR", color = MaterialTheme.colorScheme.onBackground)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sign in with Google
             OutlinedButton(
                 onClick = { navController.navigate("student_dash") },
                 enabled = isStudentRoleSelected,
@@ -163,7 +154,7 @@ fun LoginPage(navController: NavController) {
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, Color.LightGray)
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
@@ -172,8 +163,12 @@ fun LoginPage(navController: NavController) {
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Sign in with Google", color = Color.Black)
+                    Text(text = "Sign in with Google", color = MaterialTheme.colorScheme.onBackground)
                 }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = { navController.navigate("signup") }) {
+                Text("Don\'t have an account? Sign Up")
             }
         }
     }
@@ -187,7 +182,7 @@ fun RoleSelectionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = if (selected) MaterialTheme.colorScheme.primary else Color.Gray
+    val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val backgroundColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
 
     Card(
@@ -209,14 +204,14 @@ fun RoleSelectionCard(
                 onClick = onClick,
                 colors = RadioButtonDefaults.colors(
                     selectedColor = MaterialTheme.colorScheme.primary,
-                    unselectedColor = Color.Gray
+                    unselectedColor = MaterialTheme.colorScheme.outline
                 )
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = text,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                color = if (selected) MaterialTheme.colorScheme.primary else Color.Gray
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
             )
         }
     }
