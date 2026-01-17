@@ -3,6 +3,8 @@ package com.example.tutorlink.ui.theme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -26,19 +28,36 @@ import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 
 @Composable
 fun StudentDash(navController: NavController) {
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
     var userName by remember { mutableStateOf("User") }
-    
+    var appointments by remember { mutableStateOf<List<Appointment>>(emptyList()) }
+
     LaunchedEffect(auth.currentUser?.uid) {
         auth.currentUser?.uid?.let { uid ->
             db.collection("users").document(uid).get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
                         userName = document.getString("fullName") ?: "User"
+                    }
+                }
+            
+            db.collection("appointments").whereEqualTo("studentId", uid)
+                .addSnapshotListener { snapshot, _ ->
+                    if (snapshot != null) {
+                        val appointmentList = snapshot.documents.mapNotNull { doc ->
+                            val data = doc.data
+                            if (data != null) {
+                                Appointment(doc.id, data)
+                            } else {
+                                null
+                            }
+                        }
+                        appointments = appointmentList
                     }
                 }
         }
@@ -61,11 +80,54 @@ fun StudentDash(navController: NavController) {
             )
             
             Text(
-                text = "ANNOUNCEMENT",
+                text = "MY APPOINTMENTS",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary),
                 modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
             )
-            AnnouncementList()
+            AppointmentStatusList(appointments)
+        }
+    }
+}
+
+@Composable
+fun AppointmentStatusList(appointments: List<Appointment>) {
+    if (appointments.isEmpty()) {
+        Text("You have no appointments.")
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(appointments) { appointment ->
+                AppointmentStatusCard(appointment)
+            }
+        }
+    }
+}
+
+@Composable
+fun AppointmentStatusCard(appointment: Appointment) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("Tutor: ${appointment.data["tutorName"]}", fontWeight = FontWeight.Bold)
+                Text("Course: ${appointment.data["course"]}")
+                Text("Date: ${appointment.data["date"]}")
+            }
+            Text(
+                text = appointment.data["status"]?.toString()?.uppercase() ?: "N/A",
+                color = when (appointment.data["status"]) {
+                    "approved" -> Color(0xFF34A853)
+                    "rejected" -> MaterialTheme.colorScheme.error
+                    else -> Color.Gray
+                },
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

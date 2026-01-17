@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.tutorlink.ui.theme
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,16 +25,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+data class Tutor(val uid: String, val name: String, val courses: List<String>)
+
 @Composable
 fun AppointmentStudent(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var selectedTutor by remember { mutableStateOf<String?>(null) }
+    var selectedTutor by remember { mutableStateOf<Tutor?>(null) }
 
     Scaffold(
         topBar = { AppointmentStudentTopBar() },
@@ -51,7 +58,7 @@ fun AppointmentStudent(navController: NavController) {
                 onTutorSelected = { selectedTutor = it },
                 onSuccess = {
                     scope.launch {
-                        snackbarHostState.showSnackbar("Appointment Success")
+                        snackbarHostState.showSnackbar("Appointment submitted successfully")
                         navController.navigate("student_dash") {
                             popUpTo(navController.graph.startDestinationId)
                             launchSingleTop = true
@@ -68,7 +75,6 @@ fun AppointmentStudent(navController: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppointmentStudentTopBar() {
     TopAppBar(
@@ -100,31 +106,44 @@ fun AppointmentStudentTopBar() {
 
 @Composable
 fun AppointmentForm(
-    selectedTutor: String?,
-    onTutorSelected: (String) -> Unit,
+    selectedTutor: Tutor?,
+    onTutorSelected: (Tutor) -> Unit,
     onSuccess: () -> Unit,
     onError: () -> Unit
 ) {
-    val tutorCourseMap = remember {
-        mapOf(
-            "Mr Ahmad" to listOf("435 OOP", "402 Programming I"),
-            "Mr Wan Ikhwan" to listOf("435 OOP"),
-            "Miss Fazlin" to listOf("429 Computer Architecture")
-        )
-    }
-    val tutorOptions = remember { tutorCourseMap.keys.toList() }
-    val studentCountOptions = listOf("1", "2", "3", "4", "5+")
+    val db = FirebaseFirestore.getInstance()
+    var tutors by remember { mutableStateOf<List<Tutor>>(emptyList()) }
+    var isLoadingTutors by remember { mutableStateOf(true) }
+    val context = LocalContext.current
 
+    var availableCourses by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        isLoadingTutors = true
+        db.collection("users").whereEqualTo("role", "Tutor").get()
+            .addOnSuccessListener { result ->
+                val tutorList = result.documents.mapNotNull { doc ->
+                    val uid = doc.id
+                    val name = doc.getString("fullName") ?: ""
+                    @Suppress("UNCHECKED_CAST")
+                    val courses = doc.get("Course Code") as? List<String> ?: emptyList()
+                    if (name.isNotEmpty()) Tutor(uid, name, courses) else null
+                }
+                tutors = tutorList
+                isLoadingTutors = false
+            }
+            .addOnFailureListener { exception ->
+                Toast.makeText(context, "Firebase Error: ${exception.message}", Toast.LENGTH_LONG).show()
+                isLoadingTutors = false
+            }
+    }
+
+    val studentCountOptions = listOf("1", "2", "3", "4", "5+")
     var course by remember { mutableStateOf<String?>(null) }
     var studentCount by remember { mutableStateOf<String?>(null) }
     var selectedDate by remember { mutableStateOf<String?>(null) }
     var selectedTime by remember { mutableStateOf<String?>(null) }
 
-    var availableCourses by remember { 
-        mutableStateOf(selectedTutor?.let { tutorCourseMap[it] } ?: emptyList<String>()) 
-    }
-
-    val context = LocalContext.current
     val calendar = Calendar.getInstance()
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.US) }
 
@@ -156,23 +175,27 @@ fun AppointmentForm(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Tutor's name", fontWeight = FontWeight.SemiBold)
-        CustomDropdown(
+        AppDropdown(
             label = "Select Tutor",
-            options = tutorOptions,
-            selectedOption = selectedTutor,
-            onOptionSelected = { tutor ->
-                onTutorSelected(tutor)
-                course = null // Reset course selection
-                availableCourses = tutorCourseMap[tutor] ?: emptyList()
-            }
+            options = tutors.map { it.name },
+            selectedOption = selectedTutor?.name,
+            onOptionSelected = { tutorName ->
+                val foundTutor = tutors.find { it.name == tutorName }
+                if (foundTutor != null) {
+                    onTutorSelected(foundTutor)
+                    availableCourses = foundTutor.courses
+                    course = null // Reset course selection
+                }
+            },
+            isLoading = isLoadingTutors
         )
 
         Text("Course Code", fontWeight = FontWeight.SemiBold)
-        CustomDropdown(
+        AppDropdown(
             label = "Select Course",
             options = availableCourses,
             selectedOption = course,
-            onOptionSelected = { course = it },
+            onOptionSelected = { selectedCourse -> course = selectedCourse },
             enabled = selectedTutor != null
         )
 
@@ -217,19 +240,33 @@ fun AppointmentForm(
         }
 
         Text("How Many Students", fontWeight = FontWeight.SemiBold)
-        CustomDropdown(label = "Select Student Count", options = studentCountOptions, selectedOption = studentCount, onOptionSelected = { studentCount = it })
-
-        if (selectedTutor != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            DonationSection(tutorName = selectedTutor)
-        }
+        AppDropdown(label = "Select Student Count", options = studentCountOptions, selectedOption = studentCount, onOptionSelected = { selectedStudentCount -> studentCount = selectedStudentCount })
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
                 if (selectedTutor != null && course != null && studentCount != null && selectedDate != null && selectedTime != null) {
-                    onSuccess()
+                    val currentUser = FirebaseAuth.getInstance().currentUser
+                    if (currentUser != null) {
+                        val studentName = if (currentUser.displayName.isNullOrEmpty()) "Student User" else currentUser.displayName
+                        val appointment = hashMapOf(
+                            "tutorId" to selectedTutor.uid,
+                            "tutorName" to selectedTutor.name,
+                            "studentId" to currentUser.uid,
+                            "studentName" to studentName,
+                            "course" to course,
+                            "date" to selectedDate,
+                            "time" to selectedTime,
+                            "studentCount" to studentCount,
+                            "status" to "pending"
+                        )
+                        db.collection("appointments").add(appointment)
+                            .addOnSuccessListener { onSuccess() }
+                            .addOnFailureListener { onError() }
+                    } else {
+                        Toast.makeText(context, "You must be logged in to book an appointment", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     onError()
                 }
@@ -245,40 +282,57 @@ fun AppointmentForm(
 }
 
 @Composable
-fun DonationSection(tutorName: String) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+fun AppDropdown(
+    label: String,
+    options: List<String>,
+    selectedOption: String?,
+    onOptionSelected: (String) -> Unit,
+    enabled: Boolean = true,
+    isLoading: Boolean = false
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = enabled && expanded,
+        onExpandedChange = { if (enabled) expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "Feeling generous?",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+        OutlinedTextField(
+            value = selectedOption ?: "",
+            onValueChange = {},
+            label = { Text(label) },
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            enabled = enabled,
+            colors = ExposedDropdownMenuDefaults.textFieldColors()
         )
-        Text(
-            text = "You can show your appreciation to $tutorName by making a donation. This is completely optional.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-        Card(
-            modifier = Modifier.padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ExposedDropdownMenu(
+            expanded = enabled && expanded,
+            onDismissRequest = { expanded = false }
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.qraiman),
-                    contentDescription = "Tutor QR Code",
-                    modifier = Modifier.size(200.dp)
+            if (isLoading) {
+                DropdownMenuItem(
+                    text = { Text("Loading...") },
+                    enabled = false,
+                    onClick = {}
                 )
-                Text(tutorName, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text("Show this QR code to donate", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else if (options.isEmpty()) {
+                DropdownMenuItem(
+                    text = { Text("No options available") },
+                    enabled = false,
+                    onClick = {}
+                )
+            } else {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onOptionSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }

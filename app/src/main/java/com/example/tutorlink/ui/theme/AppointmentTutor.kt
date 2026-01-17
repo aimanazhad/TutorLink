@@ -7,7 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Class
@@ -26,51 +26,33 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-// Data class to represent an appointment request
-data class AppointmentRequest(
-    val id: Int,
-    val className: String,
-    val classDescription: String,
-    val time: String,
-    val studentName: String,
-    val courseCode: String,
-    val studentCount: Int,
-    val dateTime: String
-)
+data class Appointment(val id: String, val data: Map<String, Any>)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppointmentTutor(navController: NavController) {
     val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    var appointments by remember { mutableStateOf<List<Appointment>>(emptyList()) }
     
-    // Sample data for appointment requests
-    val appointmentRequests = remember {
-        listOf(
-            AppointmentRequest(
-                id = 1,
-                className = "Mathematics",
-                classDescription = "Calculus I session",
-                time = "9:41 AM",
-                studentName = "Ahmad",
-                courseCode = "MATH101",
-                studentCount = 1,
-                dateTime = "2024-08-10, 10:00 AM"
-            ),
-            AppointmentRequest(
-                id = 2,
-                className = "Physics",
-                classDescription = "Newtonian Mechanics",
-                time = "11:30 AM",
-                studentName = "Sarah",
-                courseCode = "PHY202",
-                studentCount = 1,
-                dateTime = "2024-08-11, 12:00 PM"
-            )
-        )
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            db.collection("appointments")
+                .whereEqualTo("tutorId", currentUser.uid)
+                .whereEqualTo("status", "pending")
+                .addSnapshotListener { snapshots, e ->
+                    if (e != null) { return@addSnapshotListener }
+                    val appointmentList = snapshots?.map { Appointment(it.id, it.data) } ?: emptyList()
+                    appointments = appointmentList
+                }
+        }
     }
     
-    var selectedIndex by remember { mutableStateOf<Int?>(null) }
+    var selectedAppointment by remember { mutableStateOf<Appointment?>(null) }
 
     Scaffold(
         bottomBar = { TutorDashBottomBar(navController) },
@@ -89,7 +71,6 @@ fun AppointmentTutor(navController: NavController) {
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // "Announcement" Title
             Text(
                 text = "Pending Requests",
                 fontSize = 22.sp,
@@ -98,23 +79,20 @@ fun AppointmentTutor(navController: NavController) {
                     .padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
 
-            // List of appointment requests
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                itemsIndexed(appointmentRequests) { index, request ->
+                items(appointments) { appointment ->
                     AppointmentRequestCard(
-                        request = request,
-                        highlighted = selectedIndex == index,
-                        onClick = { selectedIndex = if (selectedIndex == index) null else index } // Toggle selection
+                        appointment = appointment,
+                        highlighted = selectedAppointment?.id == appointment.id,
+                        onClick = { selectedAppointment = if (selectedAppointment?.id == appointment.id) null else appointment } // Toggle selection
                     )
                 }
             }
 
-            // Details and Action Buttons for selected request
-            val selectedRequest = selectedIndex?.let { appointmentRequests[it] }
-            if (selectedRequest != null) {
+            if (selectedAppointment != null) {
                 Column(modifier = Modifier.padding(top = 16.dp)) {
                     Divider()
                     Column(
@@ -124,10 +102,10 @@ fun AppointmentTutor(navController: NavController) {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text("REQUEST DETAILS", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
-                        Text(text = "Student: ${selectedRequest.studentName}", fontWeight = FontWeight.Medium)
-                        Text(text = "Course code: ${selectedRequest.courseCode}")
-                        Text(text = "No. of Students: ${selectedRequest.studentCount}")
-                        Text(text = "Date & Time: ${selectedRequest.dateTime}")
+                        Text(text = "Student: ${selectedAppointment!!.data["studentName"]}", fontWeight = FontWeight.Medium)
+                        Text(text = "Course: ${selectedAppointment!!.data["course"]}")
+                        Text(text = "No. of Students: ${selectedAppointment!!.data["studentCount"]}")
+                        Text(text = "Date & Time: ${selectedAppointment!!.data["date"]} at ${selectedAppointment!!.data["time"]}")
                     }
 
                     Row(
@@ -138,8 +116,9 @@ fun AppointmentTutor(navController: NavController) {
                     ) {
                         Button(
                             onClick = { 
-                                Toast.makeText(context, "Appointment for ${selectedRequest.studentName} Approved", Toast.LENGTH_SHORT).show()
-                                selectedIndex = null // Deselect after action
+                                db.collection("appointments").document(selectedAppointment!!.id).update("status", "approved")
+                                Toast.makeText(context, "Appointment Approved", Toast.LENGTH_SHORT).show()
+                                selectedAppointment = null 
                             },
                             modifier = Modifier.weight(1f).height(50.dp),
                             shape = RoundedCornerShape(12.dp)
@@ -148,8 +127,9 @@ fun AppointmentTutor(navController: NavController) {
                         }
                         OutlinedButton(
                             onClick = { 
-                                Toast.makeText(context, "Appointment for ${selectedRequest.studentName} Rejected", Toast.LENGTH_SHORT).show()
-                                selectedIndex = null // Deselect after action
+                                db.collection("appointments").document(selectedAppointment!!.id).update("status", "rejected")
+                                Toast.makeText(context, "Appointment Rejected", Toast.LENGTH_SHORT).show()
+                                selectedAppointment = null
                             },
                             modifier = Modifier.weight(1f).height(50.dp),
                             shape = RoundedCornerShape(12.dp),
@@ -165,7 +145,7 @@ fun AppointmentTutor(navController: NavController) {
 }
 
 @Composable
-fun AppointmentRequestCard(request: AppointmentRequest, highlighted: Boolean, onClick: () -> Unit) {
+fun AppointmentRequestCard(appointment: Appointment, highlighted: Boolean, onClick: () -> Unit) {
     val backgroundColor = if (highlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
     val borderColor = if (highlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
 
@@ -186,7 +166,6 @@ fun AppointmentRequestCard(request: AppointmentRequest, highlighted: Boolean, on
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Icon for the class
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -198,11 +177,11 @@ fun AppointmentRequestCard(request: AppointmentRequest, highlighted: Boolean, on
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text(text = request.className, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text(text = request.classDescription, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = "${appointment.data["course"]}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text(text = "with ${appointment.data["studentName"]}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Text(text = request.time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = "${appointment.data["time"]}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

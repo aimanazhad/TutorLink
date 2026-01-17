@@ -29,9 +29,34 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun TutorDash(navController: NavController) {
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+    var appointments by remember { mutableStateOf<List<Appointment>>(emptyList()) }
+    
+    LaunchedEffect(auth.currentUser?.uid) {
+        auth.currentUser?.uid?.let { uid ->
+            db.collection("appointments").whereEqualTo("tutorId", uid)
+                .addSnapshotListener { snapshot, _ ->
+                    if (snapshot != null) {
+                        val appointmentList = snapshot.documents.mapNotNull { doc ->
+                            val data = doc.data
+                            if (data != null) {
+                                Appointment(doc.id, data)
+                            } else {
+                                null
+                            }
+                        }
+                        appointments = appointmentList
+                    }
+                }
+        }
+    }
+
     Scaffold(
         topBar = { TutorDashTopBar() },
         bottomBar = { TutorDashBottomBar(navController) }
@@ -43,11 +68,54 @@ fun TutorDash(navController: NavController) {
                 .background(Color(0xFFF0F4F8)) // Consistent background
         ) {
             Text(
-                text = "ANNOUNCEMENT",
+                text = "MY APPOINTMENTS",
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
-            AnnouncementList()
+            TutorAppointmentList(appointments)
+        }
+    }
+}
+
+@Composable
+fun TutorAppointmentList(appointments: List<Appointment>) {
+    if (appointments.isEmpty()) {
+        Text("You have no appointments.", modifier = Modifier.padding(16.dp))
+    } else {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(16.dp)) {
+            items(appointments) { appointment ->
+                TutorAppointmentCard(appointment)
+            }
+        }
+    }
+}
+
+@Composable
+fun TutorAppointmentCard(appointment: Appointment) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("Student: ${appointment.data["studentName"]}", fontWeight = FontWeight.Bold)
+                Text("Course: ${appointment.data["course"]}")
+                Text("Date: ${appointment.data["date"]}")
+            }
+            Text(
+                text = appointment.data["status"]?.toString()?.uppercase() ?: "N/A",
+                color = when (appointment.data["status"]) {
+                    "approved" -> Color(0xFF34A853)
+                    "rejected" -> MaterialTheme.colorScheme.error
+                    else -> Color.Gray
+                },
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
