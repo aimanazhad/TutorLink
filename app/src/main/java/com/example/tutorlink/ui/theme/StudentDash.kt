@@ -1,4 +1,3 @@
-
 package com.example.tutorlink.ui.theme
 
 import androidx.compose.foundation.Image
@@ -20,13 +19,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun StudentDash(navController: NavController) {
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+    var userName by remember { mutableStateOf("User") }
+    
+    LaunchedEffect(auth.currentUser?.uid) {
+        auth.currentUser?.uid?.let { uid ->
+            db.collection("users").document(uid).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        userName = document.getString("fullName") ?: "User"
+                    }
+                }
+        }
+    }
+
     Scaffold(
         topBar = { StudentDashTopBar() },
         bottomBar = { StudentDashBottomBar(navController) }
@@ -38,9 +55,15 @@ fun StudentDash(navController: NavController) {
                 .padding(16.dp)
         ) {
             Text(
+                text = "Welcome, $userName!",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            Text(
                 text = "ANNOUNCEMENT",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(bottom = 16.dp)
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
             )
             AnnouncementList()
         }
@@ -113,23 +136,17 @@ fun StudentDashBottomBar(navController: NavController) {
                 selected = currentRoute == route,
                 onClick = { 
                     navController.navigate(route) {
-                        // Pop up to the start destination of the graph to
-                        // avoid building up a large stack of destinations
-                        // on the back stack as users select items
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true
                         }
-                        // Avoid multiple copies of the same destination when
-                        // reselecting the same item
                         launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = Color.White,
-                    indicatorColor = Color(0xFFE0B0FF) // Light purple for selected background
+                    indicatorColor = Color(0xFFE0B0FF)
                 )
             )
         }
