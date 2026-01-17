@@ -25,6 +25,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun TutorLogin(navController: NavController) {
@@ -34,6 +35,7 @@ fun TutorLogin(navController: NavController) {
 
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -121,13 +123,41 @@ fun TutorLogin(navController: NavController) {
                         isLoading = true
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
-                                isLoading = false
                                 if (task.isSuccessful) {
-                                    navController.navigate("tutor_dash")
+                                    val user = auth.currentUser
+                                    if (user != null) {
+                                        db.collection("users").document(user.uid).get()
+                                            .addOnSuccessListener { document ->
+                                                isLoading = false
+                                                if (document != null && document.exists()) {
+                                                    val role = document.getString("role")
+                                                    if (role == "Tutor") {
+                                                        navController.navigate("tutor_dash")
+                                                    } else {
+                                                        Toast.makeText(context, "Not a Tutor account.", Toast.LENGTH_SHORT).show()
+                                                        auth.signOut()
+                                                    }
+                                                } else {
+                                                    Toast.makeText(context, "User data not found.", Toast.LENGTH_SHORT).show()
+                                                    auth.signOut()
+                                                }
+                                            }
+                                            .addOnFailureListener { e ->
+                                                isLoading = false
+                                                Toast.makeText(context, "Failed to fetch user data: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                auth.signOut()
+                                            }
+                                    } else {
+                                         isLoading = false
+                                         Toast.makeText(context, "Authentication failed. Please try again.", Toast.LENGTH_SHORT).show()
+                                    }
                                 } else {
-                                    Toast.makeText(context, "Login Failed", Toast.LENGTH_SHORT).show()
+                                    isLoading = false
+                                    Toast.makeText(context, "Login Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                                 }
                             }
+                    } else {
+                        Toast.makeText(context, "Please enter email and password", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
@@ -139,6 +169,10 @@ fun TutorLogin(navController: NavController) {
             ) {
                 if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                 else Text(text = "Log In", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = { navController.popBackStack() }) {
+                Text("Back to Login")
             }
         }
     }
