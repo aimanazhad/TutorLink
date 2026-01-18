@@ -1,5 +1,6 @@
 package com.example.tutorlink.ui.theme
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,13 +26,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTutor(navController: NavController) {
-    var name by remember { mutableStateOf("Dr. Smith") }
-    var staffId by remember { mutableStateOf("T12345") }
-    var phoneNo by remember { mutableStateOf("012-3456789") }
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+    val currentUser = auth.currentUser
+    val context = LocalContext.current
+
+    var name by remember { mutableStateOf("") }
+    var staffId by remember { mutableStateOf("") }
+    var phoneNo by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            db.collection("users").document(currentUser.uid).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        name = document.getString("fullName") ?: ""
+                        staffId = document.getString("matricNo") ?: ""
+                        phoneNo = document.getString("phoneNo") ?: ""
+                    }
+                }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -126,15 +149,36 @@ fun EditTutor(navController: NavController) {
             // Action Buttons
             Button(
                 onClick = { 
-                    // In a real app, save to DB here
-                    navController.popBackStack() 
+                    if (currentUser != null) {
+                        isLoading = true
+                        val updatedData = mapOf(
+                            "fullName" to name.trim(),
+                            "matricNo" to staffId.trim(),
+                            "phoneNo" to phoneNo.trim()
+                        )
+                        db.collection("users").document(currentUser.uid).update(updatedData)
+                            .addOnSuccessListener {
+                                isLoading = false
+                                Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                                navController.popBackStack()
+                            }
+                            .addOnFailureListener { e ->
+                                isLoading = false
+                                Toast.makeText(context, "Failed to update profile: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = !isLoading
             ) {
-                Text("SAVE CHANGES", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else {
+                    Text("SAVE CHANGES", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))

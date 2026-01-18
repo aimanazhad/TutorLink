@@ -9,9 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,16 +22,32 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+
 
 @Composable
 fun ProfileStudent(navController: NavController) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+    val currentUser = auth.currentUser
+
+    var user by remember { mutableStateOf<Map<String, Any>>(emptyMap()) }
+
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            db.collection("users").document(currentUser.uid).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        user = document.data!!
+                    }
+                }
+        }
+    }
+
     Scaffold(
         topBar = { ProfileStudentTopBar() },
         bottomBar = { StudentDashBottomBar(navController) },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -76,13 +90,13 @@ fun ProfileStudent(navController: NavController) {
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    ProfileDetailRow(label = "Name:", value = "Aiman Azhad")
+                    ProfileDetailRow(label = "Name:", value = user["fullName"] as? String ?: "Loading...")
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    ProfileDetailRow(label = "Matric No:", value = "D123456789")
+                    ProfileDetailRow(label = "Matric No:", value = user["matricNo"] as? String ?: "N/A")
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    ProfileDetailRow(label = "Phone No:", value = "018-3784009")
+                    ProfileDetailRow(label = "Phone No:", value = user["phoneNo"] as? String ?: "N/A")
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    ProfileDetailRow(label = "Status:", value = "Student")
+                    ProfileDetailRow(label = "Status:", value = user["role"] as? String ?: "N/A")
                 }
             }
 
@@ -107,6 +121,7 @@ fun ProfileStudent(navController: NavController) {
             // Log Out Button
             OutlinedButton(
                 onClick = {
+                    auth.signOut()
                     navController.navigate("login") {
                         popUpTo(navController.graph.startDestinationId) {
                             inclusive = true

@@ -11,7 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,10 +24,29 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileTutor(navController: NavController) {
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+    val currentUser = auth.currentUser
+
+    var user by remember { mutableStateOf<Map<String, Any>>(emptyMap()) }
+
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            db.collection("users").document(currentUser.uid).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        user = document.data!!
+                    }
+                }
+        }
+    }
+
     Scaffold(
         topBar = { 
             TopAppBar(
@@ -67,8 +86,8 @@ fun ProfileTutor(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
             
-            Text(text = "Dr. Smith", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Tutor", fontSize = 16.sp, color = Color.Gray)
+            Text(text = user["fullName"] as? String ?: "Loading...", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = user["role"] as? String ?: "", fontSize = 16.sp, color = Color.Gray)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -80,13 +99,13 @@ fun ProfileTutor(navController: NavController) {
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ProfileDetailRow(label = "Full Name:", value = "Dr. Smith")
+                    ProfileDetailRow(label = "Full Name:", value = user["fullName"] as? String ?: "")
                     Divider()
-                    ProfileDetailRow(label = "Staff ID:", value = "T12345")
+                    ProfileDetailRow(label = "Staff ID:", value = user["matricNo"] as? String ?: "N/A")
                     Divider()
-                    ProfileDetailRow(label = "Phone No:", value = "012-3456789")
+                    ProfileDetailRow(label = "Phone No:", value = user["phoneNo"] as? String ?: "N/A")
                     Divider()
-                    ProfileDetailRow(label = "Email:", value = "dr.smith@university.edu")
+                    ProfileDetailRow(label = "Email:", value = user["email"] as? String ?: "")
                 }
             }
 
@@ -110,6 +129,7 @@ fun ProfileTutor(navController: NavController) {
             // Log Out Button
             OutlinedButton(
                 onClick = {
+                    auth.signOut()
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
