@@ -55,13 +55,8 @@ fun AppointmentStudent(navController: NavController) {
                 selectedTutor = selectedTutor,
                 onTutorSelected = { selectedTutor = it },
                 onSuccess = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Appointment submitted successfully")
-                        navController.navigate("student_dash") {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
-                    }
+                    appointmentId ->
+                    navController.navigate("appointment_confirmation/$appointmentId")
                 },
                 onError = {
                     scope.launch {
@@ -106,7 +101,7 @@ fun AppointmentStudentTopBar() {
 fun AppointmentForm(
     selectedTutor: Tutor?,
     onTutorSelected: (Tutor) -> Unit,
-    onSuccess: () -> Unit,
+    onSuccess: (String) -> Unit,
     onError: () -> Unit
 ) {
     val db = FirebaseFirestore.getInstance()
@@ -121,7 +116,7 @@ fun AppointmentForm(
         db.collection("users").whereEqualTo("role", "Tutor").get()
             .addOnSuccessListener { result ->
                 val tutorList = result.documents.mapNotNull { doc ->
-                    doc.toObject(Tutor::class.java)
+                    doc.toObject(Tutor::class.java)?.copy(uid = doc.id)
                 }
                 tutors = tutorList
                 isLoadingTutors = false
@@ -243,21 +238,32 @@ fun AppointmentForm(
                 if (selectedTutor != null && course != null && studentCount != null && selectedDate != null && selectedTime != null) {
                     val currentUser = FirebaseAuth.getInstance().currentUser
                     if (currentUser != null) {
-                        val studentName = if (currentUser.displayName.isNullOrEmpty()) "Student User" else currentUser.displayName
-                        val appointment = hashMapOf(
-                            "tutorId" to selectedTutor.uid,
-                            "tutorName" to selectedTutor.name,
-                            "studentId" to currentUser.uid,
-                            "studentName" to studentName,
-                            "course" to course,
-                            "date" to selectedDate,
-                            "time" to selectedTime,
-                            "studentCount" to studentCount,
-                            "status" to "pending"
-                        )
-                        db.collection("appointments").add(appointment)
-                            .addOnSuccessListener { onSuccess() }
-                            .addOnFailureListener { onError() }
+                        // Fetch student's name from Firestore
+                        db.collection("users").document(currentUser.uid).get()
+                            .addOnSuccessListener { userDoc ->
+                                val studentName = userDoc.getString("fullName") ?: "Student User"
+                                val appointment = hashMapOf(
+                                    "tutorId" to selectedTutor.uid,
+                                    "tutorName" to selectedTutor.name,
+                                    "studentId" to currentUser.uid,
+                                    "studentName" to studentName,
+                                    "course" to course!!,
+                                    "date" to selectedDate!!,
+                                    "time" to selectedTime!!,
+                                    "studentCount" to studentCount!!,
+                                    "status" to "pending"
+                                )
+                                db.collection("appointments").add(appointment)
+                                    .addOnSuccessListener { documentReference -> onSuccess(documentReference.id) }
+                                    .addOnFailureListener {
+                                        Toast.makeText(context, "Failed to book appointment.", Toast.LENGTH_SHORT).show()
+                                        onError()
+                                    }
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Failed to get user details.", Toast.LENGTH_SHORT).show()
+                                onError()
+                            }
                     } else {
                         Toast.makeText(context, "You must be logged in to book an appointment", Toast.LENGTH_SHORT).show()
                     }

@@ -44,12 +44,7 @@ fun TutorDash(navController: NavController) {
                 .addSnapshotListener { snapshot, _ ->
                     if (snapshot != null) {
                         val appointmentList = snapshot.documents.mapNotNull { doc ->
-                            val data = doc.data
-                            if (data != null) {
-                                Appointment(doc.id, data)
-                            } else {
-                                null
-                            }
+                            doc.toObject(Appointment::class.java)?.copy(id = doc.id)
                         }
                         appointments = appointmentList
                     }
@@ -103,13 +98,13 @@ fun TutorAppointmentCard(appointment: Appointment) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Student: ${appointment.data["studentName"]}", fontWeight = FontWeight.Bold)
-                Text("Course: ${appointment.data["course"]}")
-                Text("Date: ${appointment.data["date"]}")
+                Text("Student: ${appointment.studentName}", fontWeight = FontWeight.Bold)
+                Text("Course: ${appointment.course}")
+                Text("Date: ${appointment.date}")
             }
             Text(
-                text = appointment.data["status"]?.toString()?.uppercase() ?: "N/A",
-                color = when (appointment.data["status"]) {
+                text = appointment.status.uppercase(),
+                color = when (appointment.status) {
                     "approved" -> Color(0xFF34A853)
                     "rejected" -> MaterialTheme.colorScheme.error
                     else -> Color.Gray
@@ -202,7 +197,6 @@ fun TutorDashBottomBar(navController: NavController) {
     }
 }
 
-data class Screen(val route: String, val title: String, val icon: ImageVector)
 
 @Preview(showBackground = true)
 @Composable

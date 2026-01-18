@@ -28,7 +28,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.tutorlink.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
 
 @Composable
 fun StudentDash(navController: NavController) {
@@ -50,12 +49,7 @@ fun StudentDash(navController: NavController) {
                 .addSnapshotListener { snapshot, _ ->
                     if (snapshot != null) {
                         val appointmentList = snapshot.documents.mapNotNull { doc ->
-                            val data = doc.data
-                            if (data != null) {
-                                Appointment(doc.id, data)
-                            } else {
-                                null
-                            }
+                            doc.toObject(Appointment::class.java)?.copy(id = doc.id)
                         }
                         appointments = appointmentList
                     }
@@ -115,13 +109,13 @@ fun AppointmentStatusCard(appointment: Appointment) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Tutor: ${appointment.data["tutorName"]}", fontWeight = FontWeight.Bold)
-                Text("Course: ${appointment.data["course"]}")
-                Text("Date: ${appointment.data["date"]}")
+                Text("Tutor: ${appointment.tutorName}", fontWeight = FontWeight.Bold)
+                Text("Course: ${appointment.course}")
+                Text("Date: ${appointment.date}")
             }
             Text(
-                text = appointment.data["status"]?.toString()?.uppercase() ?: "N/A",
-                color = when (appointment.data["status"]) {
+                text = appointment.status.uppercase(),
+                color = when (appointment.status) {
                     "approved" -> Color(0xFF34A853)
                     "rejected" -> MaterialTheme.colorScheme.error
                     else -> Color.Gray

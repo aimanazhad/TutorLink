@@ -1,5 +1,6 @@
 package com.example.tutorlink.ui.theme
 
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 
@@ -22,3 +23,20 @@ data class Tutor(
     @get:PropertyName("fullName") @set:PropertyName("fullName") var name: String = "",
     val courses: List<String> = emptyList()
 )
+
+// Single source of truth for the Appointment data model
+data class Appointment(
+    val id: String = "",
+    val tutorId: String = "",
+    val tutorName: String = "",
+    val studentId: String = "",
+    val studentName: String = "",
+    val course: String = "",
+    val date: String = "",
+    val time: String = "",
+    val studentCount: String = "",
+    val status: String = ""
+)
+
+// Data class for bottom navigation items
+data class Screen(val route: String, val title: String, val icon: ImageVector)

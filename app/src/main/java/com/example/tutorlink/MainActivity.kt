@@ -5,10 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.tutorlink.ui.theme.AddReviewScreen
+import com.example.tutorlink.ui.theme.AppointmentConfirmationScreen
 import com.example.tutorlink.ui.theme.AppointmentStudent
 import com.example.tutorlink.ui.theme.AppointmentTutor
 import com.example.tutorlink.ui.theme.ConfessRate
@@ -50,6 +53,13 @@ fun TutorLinkApp() {
         composable("profile_tutor") { ProfileTutor(navController) }
         composable("edit_tutor") { EditTutor(navController) }
         composable("appointment_student") { AppointmentStudent(navController) }
+        composable(
+            "appointment_confirmation/{appointmentId}",
+            arguments = listOf(navArgument("appointmentId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val appointmentId = backStackEntry.arguments?.getString("appointmentId") ?: ""
+            AppointmentConfirmationScreen(navController, appointmentId)
+        }
         composable("appointment_tutor") { AppointmentTutor(navController) }
         composable("confess_rate") { ConfessRate(navController) }
         composable("rate_review") { RateReview(navController) }
