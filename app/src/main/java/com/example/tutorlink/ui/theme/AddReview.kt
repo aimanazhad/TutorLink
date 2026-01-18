@@ -1,109 +1,185 @@
-
 package com.example.tutorlink.ui.theme
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddReview(navController: NavController) {
-    var selectedTutor by remember { mutableStateOf<String?>(null) }
-    var rating by remember { mutableStateOf(0) }
-    var comment by remember { mutableStateOf("") }
+fun AddReviewScreen(navController: NavController) {
+    val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
 
-    val tutors = listOf("Dr. Smith", "Prof. Jane")
+    var tutors by remember { mutableStateOf<List<Tutor>>(emptyList()) }
+    var selectedTutor by remember { mutableStateOf<Tutor?>(null) }
+    var availableCourses by remember { mutableStateOf<List<String>>(emptyList()) }
+    var selectedCourse by remember { mutableStateOf<String?>(null) }
+    var rating by remember { mutableStateOf(0) }
+    var comment by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var studentName by remember { mutableStateOf("") }
+
+    // Fetch tutors
+    LaunchedEffect(Unit) {
+        db.collection("users").whereEqualTo("role", "Tutor").get()
+            .addOnSuccessListener { result ->
+                val tutorList = result.documents.mapNotNull { doc ->
+                     doc.toObject(Tutor::class.java)?.copy(uid = doc.id)
+                }
+                tutors = tutorList
+            }
+    }
+
+    // Fetch current student's name
+    LaunchedEffect(auth.currentUser?.uid) {
+        auth.currentUser?.uid?.let { uid ->
+            db.collection("users").document(uid).get()
+                .addOnSuccessListener { doc ->
+                    if (doc.exists()) {
+                        studentName = doc.getString("fullName") ?: "Anonymous"
+                    }
+                }
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add Review", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                title = { Text("Add a Review") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
             )
-        },
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            CustomDropdown("Select a Tutor", tutors, selectedTutor, { selectedTutor = it })
-            Spacer(modifier = Modifier.height(16.dp))
+            Text("Review a Tutor", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
 
-            Text("Rating", fontWeight = FontWeight.Medium, fontSize = 16.sp)
-            StarRatingInput(rating = rating, onRatingChange = { rating = it })
-            Spacer(modifier = Modifier.height(16.dp))
+            // Tutor Dropdown
+            AppDropdown(
+                label = "Select Tutor",
+                options = tutors.map { it.name },
+                selectedOption = selectedTutor?.name,
+                onOptionSelected = { tutorName ->
+                    val foundTutor = tutors.find { it.name == tutorName }
+                    selectedTutor = foundTutor
+                    if (foundTutor != null) {
+                        availableCourses = foundTutor.courses
+                        selectedCourse = null // Reset course selection
+                    }
+                }
+            )
 
+            // Course Dropdown
+            AppDropdown(
+                label = "Select Course",
+                options = availableCourses,
+                selectedOption = selectedCourse,
+                onOptionSelected = { course -> selectedCourse = course },
+                enabled = selectedTutor != null
+            )
+
+
+            // Star Rating
+            Text("Your Rating", fontWeight = FontWeight.SemiBold)
+            StarRating(rating = rating, onRatingChange = { newRating -> rating = newRating })
+
+
+            // Comment Box
             OutlinedTextField(
                 value = comment,
                 onValueChange = { comment = it },
                 label = { Text("Write your review") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp),
-                shape = RoundedCornerShape(12.dp)
+                    .height(150.dp)
             )
-            Spacer(modifier = Modifier.height(24.dp))
 
+            // Submit Button
             Button(
                 onClick = {
-                    Toast.makeText(context, "Review Submitted!", Toast.LENGTH_SHORT).show()
-                    navController.popBackStack()
+                    val currentUser = auth.currentUser
+                    if (selectedTutor == null) {
+                        Toast.makeText(context, "Please select a tutor", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (selectedCourse == null) {
+                        Toast.makeText(context, "Please select a course", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (rating == 0) {
+                        Toast.makeText(context, "Please provide a rating", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (comment.isBlank()) {
+                        Toast.makeText(context, "Please write a comment", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (currentUser == null) {
+                        Toast.makeText(context, "You must be logged in to post a review", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    isLoading = true
+                    val reviewData = hashMapOf(
+                        "tutorId" to selectedTutor!!.uid,
+                        "tutorName" to selectedTutor!!.name,
+                        "studentId" to currentUser.uid,
+                        "studentName" to studentName,
+                        "courseCode" to selectedCourse!!,
+                        "rating" to rating,
+                        "comment" to comment.trim(),
+                        "timestamp" to Timestamp.now()
+                    )
+
+                    db.collection("reviews").add(reviewData)
+                        .addOnSuccessListener {
+                            isLoading = false
+                            Toast.makeText(context, "Review submitted successfully!", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        }
+                        .addOnFailureListener { e ->
+                            isLoading = false
+                            Toast.makeText(context, "Failed to submit review: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                enabled = selectedTutor != null && rating > 0 && comment.isNotBlank()
+                enabled = !isLoading
             ) {
-                Text("Submit Review", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Submit Review", fontWeight = FontWeight.Bold)
+                }
             }
         }
-    }
-}
-
-@Composable
-fun StarRatingInput(rating: Int, onRatingChange: (Int) -> Unit) {
-    Row(
-        modifier = Modifier.padding(vertical = 8.dp)
-    ) {
-        (1..5).forEach { index ->
-            Icon(
-                imageVector = if (index <= rating) Icons.Filled.Star else Icons.Filled.StarBorder,
-                contentDescription = null,
-                tint = if (index <= rating) MaterialTheme.colorScheme.primary else Color.Gray,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clickable { onRatingChange(index) }
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AddReviewPreview() {
-    TutorLINKTheme {
-        AddReview(rememberNavController())
     }
 }

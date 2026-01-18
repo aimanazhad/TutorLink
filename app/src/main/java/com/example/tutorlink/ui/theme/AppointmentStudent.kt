@@ -32,8 +32,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-data class Tutor(val uid: String, val name: String, val courses: List<String>)
-
 @Composable
 fun AppointmentStudent(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -123,11 +121,7 @@ fun AppointmentForm(
         db.collection("users").whereEqualTo("role", "Tutor").get()
             .addOnSuccessListener { result ->
                 val tutorList = result.documents.mapNotNull { doc ->
-                    val uid = doc.id
-                    val name = doc.getString("fullName") ?: ""
-                    @Suppress("UNCHECKED_CAST")
-                    val courses = doc.get("courses") as? List<String> ?: emptyList()
-                    if (name.isNotEmpty()) Tutor(uid, name, courses) else null
+                    doc.toObject(Tutor::class.java)
                 }
                 tutors = tutorList
                 isLoadingTutors = false

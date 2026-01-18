@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.tutorlink.ui.theme.AddReview
+import com.example.tutorlink.ui.theme.AddReviewScreen
 import com.example.tutorlink.ui.theme.AppointmentStudent
 import com.example.tutorlink.ui.theme.AppointmentTutor
 import com.example.tutorlink.ui.theme.ConfessRate
@@ -53,6 +53,6 @@ fun TutorLinkApp() {
         composable("appointment_tutor") { AppointmentTutor(navController) }
         composable("confess_rate") { ConfessRate(navController) }
         composable("rate_review") { RateReview(navController) }
-        composable("add_review") { AddReview(navController) }
+        composable("add_review") { AddReviewScreen(navController) }
     }
 }
