@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.tutorlink" />
+                  <option name="mobileSdkAppId" value="1:336704939872:android:259494ae99f5fa4823a005" />
+                  <option name="projectId" value="tutorlinkcommunity" />
+                  <option name="projectNumber" value="336704939872" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

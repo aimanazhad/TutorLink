@@ -121,7 +121,9 @@ fun TutorLogin(navController: NavController) {
                 onClick = { 
                     if (email.isNotEmpty() && password.isNotEmpty()) {
                         isLoading = true
-                        auth.signInWithEmailAndPassword(email, password)
+                        val trimmedEmail = email.trim()
+                        val trimmedPassword = password.trim()
+                        auth.signInWithEmailAndPassword(trimmedEmail, trimmedPassword)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     val user = auth.currentUser

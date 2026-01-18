@@ -1,6 +1,7 @@
 package com.example.tutorlink
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -8,7 +9,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,6 +40,7 @@ fun SignUpPage(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var matricNo by remember { mutableStateOf("") }
     var phoneNo by remember { mutableStateOf("") }
+    var courses by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
@@ -67,15 +74,16 @@ fun SignUpPage(navController: NavController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        SignUpTextField(value = fullName, onValueChange = { fullName = it }, label = "Full Name", icon = Icons.Default.Person)
+        SignUpTextField(value = fullName, onValueChange = { fullName = it }, label = "Full Name", icon = Icons.Filled.Person)
         Spacer(modifier = Modifier.height(16.dp))
-        SignUpTextField(value = email, onValueChange = { email = it }, label = "Email", icon = Icons.Default.Email)
+        SignUpTextField(value = email, onValueChange = { email = it }, label = "Email", icon = Icons.Filled.Email)
         Spacer(modifier = Modifier.height(16.dp))
-        SignUpTextField(value = password, onValueChange = { password = it }, label = "Password", icon = Icons.Default.Lock, isPassword = true)
+        SignUpTextField(value = password, onValueChange = { password = it }, label = "Password", icon = Icons.Filled.Lock, isPassword = true)
         Spacer(modifier = Modifier.height(16.dp))
-        SignUpTextField(value = matricNo, onValueChange = { matricNo = it }, label = "Matric No", icon = Icons.Default.Badge)
+        SignUpTextField(value = matricNo, onValueChange = { matricNo = it }, label = "Matric No", icon = Icons.Filled.Badge)
         Spacer(modifier = Modifier.height(16.dp))
-        SignUpTextField(value = phoneNo, onValueChange = { phoneNo = it }, label = "Phone No", icon = Icons.Default.Phone)
+        SignUpTextField(value = phoneNo, onValueChange = { phoneNo = it }, label = "Phone No", icon = Icons.Filled.Phone)
+
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -102,23 +110,43 @@ fun SignUpPage(navController: NavController) {
             )
         }
 
+        AnimatedVisibility(visible = selectedRole == "Tutor") {
+            Column {
+                Spacer(modifier = Modifier.height(16.dp))
+                SignUpTextField(
+                    value = courses,
+                    onValueChange = { courses = it },
+                    label = "Courses (e.g. Math, Physics)",
+                    icon = Icons.Filled.Book
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = {
                 if (email.isNotEmpty() && password.isNotEmpty() && fullName.isNotEmpty() && selectedRole != null) {
                     isLoading = true
-                    auth.createUserWithEmailAndPassword(email, password)
+                    val trimmedEmail = email.trim()
+                    val trimmedPassword = password.trim()
+                    auth.createUserWithEmailAndPassword(trimmedEmail, trimmedPassword)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 val userId = auth.currentUser?.uid
-                                val user = hashMapOf(
-                                    "fullName" to fullName,
-                                    "email" to email,
-                                    "matricNo" to matricNo,
-                                    "phoneNo" to phoneNo,
-                                    "role" to selectedRole
+                                val user = hashMapOf<String, Any>(
+                                    "fullName" to fullName.trim(),
+                                    "email" to trimmedEmail,
+                                    "matricNo" to matricNo.trim(),
+                                    "phoneNo" to phoneNo.trim(),
+                                    "role" to selectedRole!!
                                 )
+
+                                if (selectedRole == "Tutor") {
+                                    val courseList = courses.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                    user["courses"] = courseList
+                                }
+
                                 if (userId != null) {
                                     db.collection("users").document(userId).set(user)
                                         .addOnSuccessListener {

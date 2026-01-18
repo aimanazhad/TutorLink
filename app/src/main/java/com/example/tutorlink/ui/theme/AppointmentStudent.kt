@@ -126,7 +126,7 @@ fun AppointmentForm(
                     val uid = doc.id
                     val name = doc.getString("fullName") ?: ""
                     @Suppress("UNCHECKED_CAST")
-                    val courses = doc.get("Course Code") as? List<String> ?: emptyList()
+                    val courses = doc.get("courses") as? List<String> ?: emptyList()
                     if (name.isNotEmpty()) Tutor(uid, name, courses) else null
                 }
                 tutors = tutorList
